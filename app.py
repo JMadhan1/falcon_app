@@ -25,18 +25,24 @@ else:
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(FEEDBACK_FOLDER, exist_ok=True)
 
-# Load Model Globaly
-print("📦 Loading YOLOv8 Model...")
-try:
-    if os.path.exists(MODEL_PATH):
-        model = YOLO(MODEL_PATH)
-        print("✅ Model loaded successfully!")
-    else:
-        print(f"❌ Model not found at {MODEL_PATH}")
-        model = None
-except Exception as e:
-    print(f"❌ Error loading model: {e}")
-    model = None
+# Global model variable
+model = None
+
+def get_model():
+    global model
+    if model is None:
+        print("📦 Loading YOLOv8 Model...")
+        try:
+            if os.path.exists(MODEL_PATH):
+                model = YOLO(MODEL_PATH)
+                print("✅ Model loaded successfully!")
+            else:
+                print(f"❌ Model not found at {MODEL_PATH}")
+                return None
+        except Exception as e:
+            print(f"❌ Error loading model: {e}")
+            return None
+    return model
 
 @app.route('/')
 def index():
@@ -59,8 +65,9 @@ def handle_exception(e):
 
 @app.route('/detect', methods=['POST'])
 def detect():
+    model = get_model()
     if not model:
-        return jsonify({'error': 'Model not loaded'}), 500
+        return jsonify({'error': 'Model failed to load. Check server logs.'}), 500
     
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
