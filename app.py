@@ -13,8 +13,15 @@ app = Flask(__name__)
 
 # Configuration
 MODEL_PATH = 'best.pt'
-UPLOAD_FOLDER = 'static/uploads'
-FEEDBACK_FOLDER = 'feedback_data'
+
+# Use /tmp directory on Vercel (writable), local directories otherwise
+if os.environ.get('VERCEL'):
+    UPLOAD_FOLDER = '/tmp/uploads'
+    FEEDBACK_FOLDER = '/tmp/feedback_data'
+else:
+    UPLOAD_FOLDER = 'static/uploads'
+    FEEDBACK_FOLDER = 'feedback_data'
+
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(FEEDBACK_FOLDER, exist_ok=True)
 
@@ -126,4 +133,5 @@ def feedback():
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    debug = os.environ.get('FLASK_ENV') != 'production'
+    app.run(host='0.0.0.0', port=port, debug=debug)
