@@ -42,6 +42,21 @@ except Exception as e:
 def index():
     return render_template('index.html')
 
+# Error handlers to ensure JSON responses
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({'error': 'Not found'}), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({'error': 'Internal server error'}), 500
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    # Log the error
+    print(f"Unhandled exception: {str(e)}")
+    return jsonify({'error': str(e)}), 500
+
 @app.route('/detect', methods=['POST'])
 def detect():
     if not model:
